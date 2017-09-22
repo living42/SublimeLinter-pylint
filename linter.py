@@ -18,16 +18,7 @@ class Pylint(PythonLinter):
     """Provides an interface to pylint."""
 
     syntax = 'python'
-    cmd = (
-        'pylint@python',
-        '--msg-template=\'{line}:{column}:{msg_id}: {msg}\'',
-        '--module-rgx=.*',  # don't check the module name
-        '--reports=n',      # remove tables
-        '--persistent=n',   # don't save the old score (no sense for temp)
-    )
-    version_args = '--version'
-    version_re = r'pylint.* (?P<version>\d+\.\d+\.\d+),'
-    version_requirement = '>= 1.0'
+    cmd = None
     regex = (
         r'^(?P<line>\d+):(?P<col>\d+):'
         r'(?P<code>(?:(?P<error>[FE])|(?P<warning>[CIWR]))\d+): '
@@ -308,3 +299,15 @@ class Pylint(PythonLinter):
                 message = code + ' ' + message
 
         return match, line, col, error, warning, message, near
+
+    def build_cmd(self, cmd=None):
+        python_executable, *_ = util.find_python(self.get_view_settings().get('@python', None))
+
+        cmd = (
+            python_executable, '-m', 'pylint',
+            '--msg-template=\'{line}:{column}:{msg_id}: {msg}\'',
+            '--module-rgx=.*',  # don't check the module name
+            '--reports=n',      # remove tables
+            '--persistent=n',   # don't save the old score (no sense for temp)
+        )
+        return cmd
